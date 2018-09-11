@@ -5,12 +5,21 @@
   <title>Wehaveit</title>
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <!-- css -->
   <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700|Open+Sans:400,300,700,800" rel="stylesheet" media="screen">
 
   <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
   <link href="css/style.css" rel="stylesheet" media="screen">
   <link href="color/default.css" rel="stylesheet" media="screen">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+  <!-- =======================================================
+    Theme Name: Alstar
+    Theme URL: https://bootstrapmade.com/alstar-free-parallax-bootstrap-template/
+    Author: BootstrapMade.com
+    Author URL: https://bootstrapmade.com
+  ======================================================= -->
 </head>
 
 <body>
@@ -41,6 +50,8 @@
       </div>
     </div>
   </nav>
+    
+    
 
   <!-- intro area -->
   <div id="intro">
@@ -55,6 +66,9 @@
       </div>
     </div>
   </div>
+    
+    
+
 
   <!-- About -->
   <section id="about" class="home-section bg-white">
@@ -70,7 +84,7 @@
       </div>
       <div class="row wow fadeInUp">
         <div class="col-md-6 about-img">
-          <img src="img/about-img.jpg" alt="">
+         <img src="img/about-img.jpg" alt=""/>
         </div>
 
         <div class="col-md-6 content">
@@ -143,13 +157,140 @@
       </div>
     </div>
   </section>
+    
+    <script src="js/three.js"></script>
 
-  <!-- Parallax 2 -->
+		<script src="js/stats.min.js"></script>
+
+		<script>
+			var container, stats;
+			var camera, scene, raycaster, renderer, parentTransform, sphereInter;
+			var mouse = new THREE.Vector2();
+			var radius = 100, theta = 0;
+			var currentIntersected;
+			init();
+			animate();
+			function init() {
+                
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+				var info = document.createElement( 'div' );
+				
+				
+				container.appendChild( info );
+				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0xf0f0f0 );
+				var geometry = new THREE.SphereBufferGeometry( 5 );
+				var material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+				sphereInter = new THREE.Mesh( geometry, material );
+				sphereInter.visible = false;
+				scene.add( sphereInter );
+				var lineGeometry = new THREE.BufferGeometry();
+				var points = [];
+				var point = new THREE.Vector3();
+				var direction = new THREE.Vector3();
+				for ( var i = 0; i < 50; i ++ ) {
+					direction.x += Math.random() - 0.5;
+					direction.y += Math.random() - 0.5;
+					direction.z += Math.random() - 0.5;
+					direction.normalize().multiplyScalar( 10 );
+					point.add( direction );
+					points.push( point.x, point.y, point.z );
+				}
+				lineGeometry.addAttribute( 'position', new THREE.Float32BufferAttribute( points, 3 ) );
+				parentTransform = new THREE.Object3D();
+				parentTransform.position.x = Math.random() * 40 - 20;
+				parentTransform.position.y = Math.random() * 40 - 20;
+				parentTransform.position.z = Math.random() * 40 - 20;
+				parentTransform.rotation.x = Math.random() * 2 * Math.PI;
+				parentTransform.rotation.y = Math.random() * 2 * Math.PI;
+				parentTransform.rotation.z = Math.random() * 2 * Math.PI;
+				parentTransform.scale.x = Math.random() + 0.5;
+				parentTransform.scale.y = Math.random() + 0.5;
+				parentTransform.scale.z = Math.random() + 0.5;
+				for ( var i = 0; i < 50; i ++ ) {
+					var object;
+					if ( Math.random() > 0.5 ) {
+						object = new THREE.Line( lineGeometry );
+					} else {
+						object = new THREE.LineSegments( lineGeometry );
+					}
+					object.position.x = Math.random() * 400 - 200;
+					object.position.y = Math.random() * 400 - 200;
+					object.position.z = Math.random() * 400 - 200;
+					object.rotation.x = Math.random() * 2 * Math.PI;
+					object.rotation.y = Math.random() * 2 * Math.PI;
+					object.rotation.z = Math.random() * 2 * Math.PI;
+					object.scale.x = Math.random() + 0.5;
+					object.scale.y = Math.random() + 0.5;
+					object.scale.z = Math.random() + 0.5;
+					parentTransform.add( object );
+				}
+				scene.add( parentTransform );
+				raycaster = new THREE.Raycaster();
+				raycaster.linePrecision = 3;
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild(renderer.domElement);
+				stats = new Stats();
+				container.appendChild( stats.dom );
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				//
+				window.addEventListener( 'resize', onWindowResize, false );
+			}
+			function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
+			function onDocumentMouseMove( event ) {
+				event.preventDefault();
+				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+			}
+			//
+			function animate() {
+				requestAnimationFrame( animate );
+				render();
+				stats.update();
+			}
+			function render() {
+				theta += 0.1;
+				camera.position.x = radius * Math.sin( THREE.Math.degToRad( theta ) );
+				camera.position.y = radius * Math.sin( THREE.Math.degToRad( theta ) );
+				camera.position.z = radius * Math.cos( THREE.Math.degToRad( theta ) );
+				camera.lookAt( scene.position );
+				camera.updateMatrixWorld();
+				// find intersections
+				raycaster.setFromCamera( mouse, camera );
+				var intersects = raycaster.intersectObjects( parentTransform.children, true);
+				if ( intersects.length > 0 ) {
+					if ( currentIntersected !== undefined ) {
+						currentIntersected.material.linewidth = 1;
+					}
+					currentIntersected = intersects[ 0 ].object;
+					currentIntersected.material.linewidth = 5;
+					sphereInter.visible = true;
+					sphereInter.position.copy( intersects[ 0 ].point );
+				} else {
+					if ( currentIntersected !== undefined ) {
+						currentIntersected.material.linewidth = 1;
+					}
+					currentIntersected = undefined;
+					sphereInter.visible = false;
+				}
+				renderer.render( scene, camera );
+			}
+		</script>
+
+  <!-- Parallax 2 
   <section id="parallax2" class="home-section parallax" data-stellar-background-ratio="0.5">
     <div class="container">
      
     </div>
-  </section>
+  </section> -->
 
   <!-- Team -->
   <section id="team" class="home-section bg-white">
@@ -254,7 +395,73 @@
 
     </div>
   </section>
+    
+      <!--MAP-->
+ <div id="map"></div>
+    <script>
+      var map;
+      function initMap() {
+           var options = {
+        zoom:8,
+        center:{lat:-36.8497838,lng:174.7649717}
+      }
+        // New map
+      var map = new google.maps.Map(document.getElementById('map'), options);
 
+      // Listen for click on map
+      google.maps.event.addListener(map, 'click', function(event){
+        // Add marker
+        addMarker({coords:event.latLng});
+      });
+          var markers = [
+        {
+          coords:{lat:-36.8497838,lng:174.7649717},
+          iconImage:'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png',
+          content:'<h1>Queen Street, Auckland</h1>'
+        },
+        {
+          coords:{lat:-41.2936,lng: 174.7816},
+          content:'<h1>Courtenay Pl, Wellington</h1>'
+        },
+      ];
+
+      // Loop through markers
+      for(var i = 0;i < markers.length;i++){
+        // Add marker
+        addMarker(markers[i]);
+      }
+
+      // Add Marker Function
+      function addMarker(props){
+        var marker = new google.maps.Marker({
+          position:props.coords,
+          map:map,
+          //icon:props.iconImage
+        });
+
+        // Check for customicon
+        if(props.iconImage){
+          // Set icon image
+          marker.setIcon(props.iconImage);
+        }
+
+        // Check content
+        if(props.content){
+          var infoWindow = new google.maps.InfoWindow({
+            content:props.content
+          });
+
+          marker.addListener('click', function(){
+            infoWindow.open(map, marker);
+          });
+        }
+      }
+    }
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCF2VoH3GI8BbUshD_mq4DJ7z8Jm8ag9U8&callback=initMap"
+    async defer></script>
+    
+    
   <!-- Bottom widget -->
   <section id="bottom-widget" class="home-section bg-white">
     <div class="container">
@@ -264,7 +471,7 @@
             <i class="fa fa-map-marker fa-4x"></i>
             <h5>Main Office</h5>
             <p>
-              246 Queen Street,<br />Auckland 1010
+              246 Queen Street,<br />Auckland 1010 <br/> 100 Courtenay Place, Te Aro, <br/> Wellington 6011
             </p>
           </div>
         </div>
@@ -304,6 +511,9 @@
       </div>
     </div>
   </section>
+    
+
+
 
   <!-- Footer -->
   <footer>
